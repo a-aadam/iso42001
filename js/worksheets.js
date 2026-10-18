@@ -203,7 +203,7 @@
           id: 'issues', ref: '4.1', title: 'Internal and External Issues',
           example: '<b>Issue:</b> EU AI Act obligations for high-risk credit scoring apply from August 2026 · <b>External</b> · <b>Relevance:</b> our loan pre-screening model falls under Annex III, so conformity assessment and logging become mandatory · <b>Risk</b><br><b>Issue:</b> Only one engineer can retrain and monitor the scoring model · <b>Internal</b> · <b>Relevance:</b> model monitoring stops if that person is unavailable · <b>Risk</b>',
           blocks: [{
-            type: 'table', id: 'issues', rows: 6,
+            type: 'table', id: 'issues', rows: 3,
             columns: [
               { id: 'issue', label: 'Issue', type: 'textarea', w: 'l' },
               { id: 'type', label: 'Internal / External', type: 'select', options: opt('Internal', 'External'), w: 's' },
@@ -216,7 +216,7 @@
           id: 'parties', ref: '4.2', title: 'Interested Parties and Their Needs',
           example: '<b>Interested party:</b> Loan applicants · <b>Needs:</b> fair, explainable decisions and a way to contest them · <b>Requirement:</b> GDPR Art. 22; EU AI Act Art. 86 right to explanation · <b>How we address it:</b> adverse-action notice lists the top three reasons; human review on request within 5 working days',
           blocks: [{
-            type: 'table', id: 'parties', rows: 6,
+            type: 'table', id: 'parties', rows: 3,
             columns: [
               { id: 'party', label: 'Interested Party', w: 'm' },
               { id: 'needs', label: 'Needs and Expectations', type: 'textarea', w: 'l' },
@@ -252,7 +252,7 @@
           id: 'obligations', ref: '4.2', title: 'Obligations',
           example: '<b>Obligation:</b> EU AI Act (Reg. 2024/1689) Art. 9 · <b>Requires:</b> a documented risk management system for each high-risk AI system · <b>How we comply:</b> AI Risk Register reviewed quarterly by the AI Risk Committee · <b>Evidence:</b> Risk Register v1.3, Q3 committee minutes · <b>Status:</b> PC · <b>Last checked:</b> 2026-09-30',
           blocks: [{
-            type: 'table', id: 'obligations', rows: 7,
+            type: 'table', id: 'obligations', rows: 3,
             columns: [
               { id: 'source', label: 'Obligation / Source', type: 'textarea', w: 'm' },
               { id: 'requires', label: 'What It Requires', type: 'textarea', w: 'l' },
@@ -514,7 +514,7 @@
           id: 'actions', ref: '7', title: 'Required Actions and Mitigations',
           example: '<b>ACT-01</b> · Add age-band disparity check to the monthly model monitoring report · <b>H</b> · Model Risk team · 2026-12-15',
           blocks: [{
-            type: 'table', id: 'actions', rows: 5,
+            type: 'table', id: 'actions', rows: 3,
             columns: [
               { id: 'aid', label: 'Action ID', w: 'xs' },
               { id: 'desc', label: 'Action Description', type: 'textarea', w: 'l' },
@@ -564,7 +564,7 @@
           id: 'register', ref: '6.1.2', title: 'Risks',
           example: '<b>R-007</b> · Customer service assistant · Assistant gives incorrect repayment figures that customers act on · <b>Individual</b> · L <b>3</b> × C <b>3</b> = <b>9</b> Medium · A.6.2.6, A.8.2, A.9.4 · Head of Customer Ops · In treatment',
           blocks: [{
-            type: 'table', id: 'risks', rows: 15, scoring: true,
+            type: 'table', id: 'risks', rows: 3, scoring: true,
             columns: [
               { id: 'rid', label: 'Risk ID', w: 'xs' },
               { id: 'system', label: 'AI System / Function', type: 'textarea', w: 'm' },
@@ -679,7 +679,7 @@
           id: 'objectives', ref: '6.2', title: 'Objectives',
           example: '<b>Objective:</b> every in-scope AI system has a current impact assessment · <b>KPI:</b> % of systems with an assessment under 12 months old · <b>Target:</b> 100% · <b>Actions:</b> assessment calendar; 2 analyst days per system · <b>Responsible:</b> AIMS Manager · <b>Due:</b> 2027-03-31 · <b>Status:</b> On track',
           blocks: [{
-            type: 'table', id: 'objectives', rows: 6,
+            type: 'table', id: 'objectives', rows: 3,
             columns: [
               { id: 'objective', label: 'Objective', type: 'textarea', w: 'l' },
               { id: 'kpi', label: 'Indicator (KPI)', type: 'textarea', w: 'm' },

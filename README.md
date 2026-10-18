@@ -27,7 +27,8 @@ A **How to use** guide and ten worksheets, each reproducing the fields and table
 
 - **Autosave:** every worksheet saves to `localStorage` as you type.
 - **Export / import XML:** save any worksheet as a readable XML file, then load it back on any machine.
-- **Print / PDF:** each worksheet prints as a clean paper copy for your audit evidence pack.
+- **Save as PDF:** downloads a text-based PDF of each worksheet for your audit evidence pack. It uses jsPDF, loaded from cdnjs on first use, and falls back to the browser print dialog when offline.
+- **Template text:** default policy wording appears as greyed placeholder text. Click into a field to write your own, or use **Use template text** to start from the template.
 - **Examples:** each section has a short worked example (using a fictional lender) showing what to write.
 - **Calculations:** risk score (L × C) and risk level, live status tallies, and audit summary counts.
 - **Light and dark themes:** use the toggle at the bottom left. The palette is soft white `#FFFFF9`, dark gray `#313638` and a lavender accent.
@@ -57,6 +58,10 @@ To change a worksheet, edit its definition in `js/worksheets.js`. Rendering, sav
 ## Hosting
 
 The site is served by GitHub Pages from the `main` branch root (Settings → Pages → Deploy from a branch → `main` / `root`).
+
+## About
+
+This is a personal project built for learning purposes, made using Claude Code. The texts were written by a human through online research, and some have been enhanced and reworked by Claude. It replicates how an auditor would tackle a project, but it is not fully made for enterprise use. The user bears the responsibility if it is used in an enterprise environment.
 
 ## Credits
 

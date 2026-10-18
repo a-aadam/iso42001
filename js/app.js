@@ -92,7 +92,13 @@
   const levelClass = lvl => lvl ? 'lvl lvl-' + lvl.toLowerCase() : 'lvl';
 
   /* ---------- textarea autosize ---------- */
-  function grow(ta) { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 2 + 'px'; }
+  // size to the content, or to the placeholder template while the field is empty
+  function grow(ta) {
+    ta.style.height = 'auto';
+    let h = ta.scrollHeight;
+    if (!ta.value && ta.placeholder) { ta.value = ta.placeholder; h = ta.scrollHeight; ta.value = ''; }
+    ta.style.height = h + 2 + 'px';
+  }
 
   /* ======================================================================
      Rendering
@@ -213,7 +219,7 @@
       el('div', { class: 'tb-group' },
         el('button', { type: 'button', class: 'btn', onclick: () => exportXML(ws) }, icon('download'), 'Export XML'),
         el('button', { type: 'button', class: 'btn', onclick: () => { $('#import-file').dataset.target = ws.id; $('#import-file').click(); } }, icon('upload'), 'Import XML'),
-        el('button', { type: 'button', class: 'btn', onclick: () => { $$('textarea').forEach(grow); window.print(); } }, icon('print'), 'Print'),
+        el('button', { type: 'button', class: 'btn', onclick: e => savePDF(ws, e.currentTarget) }, icon('pdf'), 'Save as PDF'),
         el('button', { type: 'button', class: 'btn btn-quiet danger', onclick: () => clearSheet(ws) }, icon('erase'), 'Clear')
       )
     );
@@ -247,11 +253,13 @@
 
   const key = (sec, b, ...rest) => [sec.id, b.id, ...rest].join('/');
 
-  function bindInput(ws, input, k, fallback) {
+  // template text is shown as a greyed placeholder, never stored as a value
+  function bindInput(ws, input, k, template) {
     const data = load(ws.id);
-    const val = k in data.v ? data.v[k] : (fallback || '');
+    const val = data.v[k] || '';
     if (input.type === 'checkbox') input.checked = val === 'true';
     else input.value = val;
+    if (template && input.tagName !== 'SELECT') { input.placeholder = template; input.classList.add('has-template'); }
     input.addEventListener(input.tagName === 'SELECT' || input.type === 'checkbox' || input.type === 'radio' ? 'change' : 'input', () => {
       data.v[k] = input.type === 'checkbox' ? String(input.checked) : input.value;
       if (input.tagName === 'TEXTAREA') grow(input);
@@ -299,9 +307,15 @@
         const ta = el('textarea', { class: 'prose-input', rows: b.rows || 4, 'aria-label': sec.title });
         bindInput(ws, ta, key(sec, b), b.default);
         const warn = el('p', { class: 'placeholder-warn', hidden: true }, 'Replace the bracketed placeholders, such as ' + ORG_PLACEHOLDER + ', with your own details.');
-        const check = () => { warn.hidden = !ta.value.includes('['); };
+        const useTpl = b.default ? el('button', { type: 'button', class: 'btn btn-quiet use-template', onclick: () => {
+          if (ta.value.trim() && !confirm('Replace what you have written with the template text?')) return;
+          ta.value = b.default;
+          ta.dispatchEvent(new Event('input'));
+          ta.focus();
+        } }, icon('book'), 'Use template text') : null;
+        const check = () => { warn.hidden = !ta.value.includes('['); if (useTpl) useTpl.hidden = ta.value.trim() === b.default.trim(); };
         ta.addEventListener('input', check); check();
-        return el('div', { class: 'text-block' }, ta, warn);
+        return el('div', { class: 'text-block' }, ta, el('div', { class: 'text-tools' }, warn, useTpl));
       }
       case 'checks': {
         const fs = el('fieldset', { class: 'checks' + (b.inline ? ' is-inline' : '') }, el('legend', null, b.label));
@@ -349,10 +363,7 @@
   function tableRows(ws, sec, b) {
     const data = load(ws.id);
     const k = key(sec, b);
-    if (!Array.isArray(data.t[k])) {
-      if (b.defaults) data.t[k] = b.defaults.map(r => Object.fromEntries(b.columns.map((c, i) => [c.id, r[i] || ''])));
-      else data.t[k] = Array.from({ length: b.rows || 3 }, () => ({}));
-    }
+    if (!Array.isArray(data.t[k])) data.t[k] = Array.from({ length: b.defaults ? b.defaults.length : (b.rows || 3) }, () => ({}));
     return data.t[k];
   }
 
@@ -367,7 +378,9 @@
         b.columns.forEach(col => {
           const label = col.label + ', row ' + (ri + 1);
           if (col.type === 'computed') { tr.append(el('td', { class: 'computed w-' + (col.w || 's'), 'data-computed': col.id }, '')); return; }
-          const c = controlForRow(ws, col, row, label);
+          const ci = b.columns.indexOf(col);
+          const template = b.defaults && b.defaults[ri] ? b.defaults[ri][ci] : '';
+          const c = controlForRow(ws, col, row, label, template);
           tr.append(el('td', { class: 'w-' + (col.w || 'm') }, c));
         });
         tr.append(el('td', { class: 'row-tools' },
@@ -375,11 +388,11 @@
             const hasData = Object.values(row).some(v => v);
             if (hasData && !confirm('Remove row ' + (ri + 1) + '? Its contents will be deleted.')) return;
             rows.splice(ri, 1); persist(ws.id); draw(); recompute(ws);
-          } }, icon('minus'))));
+          } }, icon('erase'))));
         tbody.append(tr);
       });
       const table = el('table', { class: 'grid' + (b.scoring ? ' is-scoring' : '') },
-        el('thead', null, el('tr', null, b.columns.map(c => el('th', { scope: 'col', class: 'w-' + (c.w || 'm') }, c.label)), el('th', { class: 'row-tools' }, el('span', { class: 'sr' }, 'Row actions')))),
+        el('thead', null, el('tr', null, b.columns.map(c => el('th', { scope: 'col', class: 'w-' + (c.w || 'm') }, c.label)), el('th', { scope: 'col', class: 'row-tools' }, 'Remove Row'))),
         tbody);
       wrap.append(el('div', { class: 'table-wrap' }, table));
       wrap.append(el('button', { type: 'button', class: 'btn btn-quiet add-row', onclick: () => {
@@ -389,12 +402,13 @@
       $$('textarea', wrap).forEach(grow);
     };
     // table cell inputs write into the row object, not the flat value map
-    function controlForRow(ws, col, row, label) {
+    function controlForRow(ws, col, row, label, template) {
       let input;
       if (col.type === 'textarea') input = el('textarea', { rows: 1, 'aria-label': label });
       else if (col.type === 'select') input = el('select', { 'aria-label': label }, el('option', { value: '' }, '—'), col.options.map(o => el('option', { value: o.value }, o.label)));
       else input = el('input', { type: col.type === 'date' ? 'date' : 'text', 'aria-label': label });
       input.value = row[col.id] || '';
+      if (template && input.tagName !== 'SELECT') { input.placeholder = template; input.classList.add('has-template'); }
       input.dataset.col = col.id;
       input.addEventListener(input.tagName === 'SELECT' ? 'change' : 'input', () => {
         row[col.id] = input.value;
@@ -544,6 +558,200 @@
   }
 
   /* ======================================================================
+     Save as PDF: a real text PDF built from the worksheet data
+     ====================================================================== */
+  const PDF_LIBS = [
+    'https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js',
+    'https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js'
+  ];
+  let pdfLibs = null;
+  function loadPdfLibs() {
+    if (!pdfLibs) {
+      pdfLibs = PDF_LIBS.reduce((p, src) => p.then(() => new Promise((res, rej) => {
+        const s = el('script', { src, crossorigin: 'anonymous' });
+        s.onload = res; s.onerror = () => rej(new Error('load failed: ' + src));
+        document.head.append(s);
+      })), Promise.resolve());
+      pdfLibs.catch(() => { pdfLibs = null; });
+    }
+    return pdfLibs;
+  }
+
+  // the built-in PDF fonts are WinAnsi: swap the few glyphs they lack
+  const pdfText = s => String(s == null ? '' : s)
+    .replace(/↓/g, 'v').replace(/→/g, '->').replace(/≤/g, '<=').replace(/≥/g, '>=')
+    .replace(/[^\n\x20-\x7E\xA0-\xFF‘’“”–—•…€™]/g, '');
+
+  async function savePDF(ws, btn) {
+    flushSaves();
+    if (btn) { btn.disabled = true; btn.lastChild.textContent = 'Preparing PDF…'; }
+    try {
+      await loadPdfLibs();
+      buildPDF(ws).save('iso42001-' + ws.id + '-' + today() + '.pdf');
+      toast('Saved ' + ws.title + ' as PDF.');
+    } catch (e) {
+      console.error(e);
+      toast('The PDF tools couldn’t load, so the print dialog is opening instead. Choose “Save as PDF” there.');
+      $$('textarea').forEach(grow);
+      setTimeout(() => window.print(), 300);
+    } finally {
+      if (btn) { btn.disabled = false; btn.lastChild.textContent = 'Save as PDF'; }
+    }
+  }
+
+  function buildPDF(ws) {
+    const data = load(ws.id);
+    const INK = [49, 54, 56], INK2 = [86, 91, 94], INK3 = [107, 112, 115], RULE = [189, 186, 174];
+    const PAPER = [255, 255, 249], SUNK = [244, 243, 234], LAV = [87, 68, 159];
+    const LEVEL_FILL = { Low: [226, 239, 230], Medium: [246, 235, 211], High: [247, 227, 212], Critical: [246, 222, 220] };
+    const LEVEL_INK = { Low: [47, 115, 80], Medium: [147, 96, 15], High: [164, 81, 28], Critical: [170, 52, 52] };
+
+    const wide = ws.sections.some(s => s.blocks.some(b =>
+      (b.type === 'table' && b.columns.length >= 5) || (b.type === 'register' && b.columns.length >= 4)));
+    const doc = new window.jspdf.jsPDF({ orientation: wide ? 'landscape' : 'portrait', unit: 'pt', format: 'a4' });
+    const W = doc.internal.pageSize.getWidth(), H = doc.internal.pageSize.getHeight(), M = 40, BOTTOM = H - M - 14;
+    const painted = new Set();
+    const paint = () => {
+      const p = doc.internal.getCurrentPageInfo().pageNumber;
+      if (painted.has(p)) return;
+      painted.add(p);
+      doc.setFillColor(...PAPER); doc.rect(0, 0, W, H, 'F');
+    };
+    paint();
+    let y = M;
+    const ensure = h => { if (y + h > BOTTOM) { doc.addPage(); paint(); y = M; } };
+    const write = (s, o = {}) => {
+      const size = o.size || 10;
+      doc.setFont('helvetica', o.style || 'normal'); doc.setFontSize(size); doc.setTextColor(...(o.color || INK));
+      const lines = doc.splitTextToSize(pdfText(s), o.width || (W - 2 * M));
+      const lh = size * 1.38;
+      lines.forEach(line => { ensure(lh); doc.text(line, o.x || M, y + size * 0.95); y += lh; });
+      y += o.after == null ? 4 : o.after;
+    };
+    const table = opts => {
+      doc.autoTable(Object.assign({
+        startY: y,
+        margin: { left: M, right: M, top: M, bottom: M + 14 },
+        theme: 'grid',
+        styles: { font: 'helvetica', fontSize: 8.5, textColor: INK, lineColor: RULE, lineWidth: 0.5, cellPadding: 4.5, fillColor: PAPER, overflow: 'linebreak', valign: 'top' },
+        headStyles: { fillColor: SUNK, textColor: INK, fontStyle: 'bold' },
+        willDrawPage: paint
+      }, opts));
+      y = doc.lastAutoTable.finalY + 16;
+    };
+    const blank = s => (s == null || String(s).trim() === '');
+    const optLabel = (col, v) => {
+      if (!v || !col.options) return v || '';
+      const o = col.options.find(x => x.value === v);
+      return o ? o.label : v;
+    };
+    const levelCells = hook => d => {
+      if (d.section !== 'body') return;
+      const lvl = hook(d);
+      if (LEVEL_FILL[lvl]) { d.cell.styles.fillColor = LEVEL_FILL[lvl]; d.cell.styles.textColor = LEVEL_INK[lvl]; d.cell.styles.fontStyle = 'bold'; }
+    };
+
+    // header
+    write('ISO/IEC 42001:2023  ·  ' + ws.ref, { size: 9, style: 'bold', color: LAV, after: 2 });
+    write(ws.title, { size: 20, style: 'bold', after: 6 });
+    write(ws.intro, { size: 9.5, color: INK2, after: 6 });
+    write('Exported ' + new Date().toLocaleString() + ' from the ISO/IEC 42001 Project Initiation Workbook', { size: 8, color: INK3, after: 8 });
+    doc.setDrawColor(...INK); doc.setLineWidth(1); doc.line(M, y, W - M, y); y += 18;
+
+    ws.sections.forEach(sec => {
+      ensure(60);
+      doc.setDrawColor(...RULE); doc.setLineWidth(0.5); doc.line(M, y, W - M, y); y += 12;
+      write((sec.ref ? sec.ref + '   ' : '') + sec.title, { size: 12.5, style: 'bold', after: 6 });
+      if (sec.intro) write(sec.intro, { size: 9, color: INK2, after: 6 });
+
+      sec.blocks.forEach(b => {
+        if (b.type === 'fields') {
+          table({
+            showHead: false, pageBreak: 'avoid',
+            body: b.fields.map(f => [f.label, optLabel(f, data.v[key(sec, b, f.id)])]),
+            columnStyles: { 0: { cellWidth: 170, fontStyle: 'bold', fillColor: SUNK } }
+          });
+        } else if (b.type === 'text') {
+          const v = data.v[key(sec, b)];
+          if (blank(v)) write('Not completed.', { size: 9.5, style: 'italic', color: INK3, after: 12 });
+          else write(v, { size: 10, after: 12 });
+        } else if (b.type === 'checks' || b.type === 'radios') {
+          write(b.label, { size: 9.5, style: 'bold', after: 4 });
+          const chosen = o => b.type === 'checks' ? data.v[key(sec, b, o.id)] === 'true' : data.v[key(sec, b)] === o.id;
+          table({
+            showHead: false, pageBreak: 'avoid',
+            body: b.options.map(o => [chosen(o) ? 'X' : '', o.label + (o.desc ? ' — ' + o.desc : '')]),
+            columnStyles: { 0: { cellWidth: 24, halign: 'center', fontStyle: 'bold', textColor: LAV } }
+          });
+        } else if (b.type === 'table') {
+          let rows = tableRows(ws, sec, b).filter(r => Object.values(r).some(v => !blank(v)));
+          const body = rows.map(r => b.columns.map(c => {
+            if (c.type === 'computed') { const sc = (+r.l || 0) * (+r.c || 0); return c.id === 'score' ? (sc ? String(sc) : '') : riskLevel(sc); }
+            return optLabel(c, r[c.id]);
+          }));
+          if (!body.length) body.push(b.columns.map(() => ''));
+          const lvlIdx = b.columns.findIndex(c => c.id === 'level');
+          table({
+            head: [b.columns.map(c => c.label)],
+            body: body.map(r => r.map(pdfText)),
+            didParseCell: lvlIdx >= 0 ? levelCells(d => d.column.index === lvlIdx ? d.cell.raw : '') : undefined
+          });
+        } else if (b.type === 'register') {
+          const body = [];
+          b.groups.forEach(g => {
+            if (g.title) body.push([{ content: pdfText(g.title), colSpan: b.columns.length + 1, styles: { fontStyle: 'bold', textColor: LAV, fillColor: PAPER } }]);
+            g.rows.forEach(r => body.push([r.ref].concat(b.columns.map(c => {
+              if (c.readonly) return (r.cells && r.cells[c.id]) || '';
+              if (c.type === 'computed') return r.count ? String(registerValues(ws, r.count.of, r.count.col).filter(x => x === r.count.value).length) : '';
+              return optLabel(c, data.v[key(sec, b, r.ref, c.id)]);
+            })).map(v => typeof v === 'string' ? pdfText(v) : v)));
+          });
+          const colStyles = { 0: { fontStyle: 'bold', fillColor: SUNK, cellWidth: b.refWide ? 120 : 52 } };
+          // editable columns get fixed room to write in; long read-only text takes the rest
+          const EDIT_W = { xs: 52, s: 84, m: 118, l: 150 };
+          b.columns.forEach((c, i) => {
+            if (c.readonly) colStyles[i + 1] = { textColor: INK2, cellWidth: c.w === 's' ? 110 : 'auto' };
+            else colStyles[i + 1] = { cellWidth: b.columns.some(x => x.readonly) ? (EDIT_W[c.w] || (c.type === 'textarea' ? 160 : 118)) : 'auto' };
+          });
+          table({ head: [[b.refLabel || ''].concat(b.columns.map(c => c.label))], body, columnStyles: colStyles });
+        } else if (b.type === 'legend') {
+          table({
+            head: [b.head], body: b.rows.map(r => r.map(pdfText)), pageBreak: 'avoid',
+            columnStyles: { 0: { fontStyle: 'bold' } },
+            didParseCell: b.levels != null ? levelCells(d => d.column.index === b.levels ? d.cell.raw : '') : undefined
+          });
+        } else if (b.type === 'matrix') {
+          const C = ['Negligible', 'Minor', 'Moderate', 'Major', 'Catastrophic'];
+          const L = ['Rare', 'Unlikely', 'Possible', 'Likely', 'Almost Certain'];
+          table({
+            head: [['Likelihood v / Consequence ->'].concat(C.map((c, i) => (i + 1) + ' ' + c))],
+            body: [5, 4, 3, 2, 1].map(l => [l + ' ' + L[l - 1]].concat([1, 2, 3, 4, 5].map(c => (l * c) + '  ' + riskLevel(l * c)))),
+            styles: { halign: 'center', fontSize: 8.5, cellPadding: 6, lineColor: PAPER, lineWidth: 1.5 },
+            columnStyles: { 0: { halign: 'right', fontStyle: 'bold', fillColor: PAPER } },
+            tableWidth: Math.min(W - 2 * M, 560), pageBreak: 'avoid',
+            didParseCell: levelCells(d => d.column.index > 0 ? String(d.cell.raw).replace(/^\d+\s+/, '') : '')
+          });
+        } else if (b.type === 'tally') {
+          const vals = registerValues(ws, b.of, b.col);
+          const parts = Object.keys(b.labels).map(v => b.labels[v] + ': ' + vals.filter(x => x === v).length);
+          y -= 8;
+          write('Summary — ' + parts.join('   ·   '), { size: 9, style: 'bold', color: INK2, after: 12 });
+        }
+      });
+    });
+
+    // running footer
+    const n = doc.getNumberOfPages();
+    for (let i = 1; i <= n; i++) {
+      doc.setPage(i);
+      doc.setFont('helvetica', 'normal'); doc.setFontSize(8); doc.setTextColor(...INK3);
+      doc.text(pdfText(ws.title + '  ·  ISO/IEC 42001:2023'), M, H - M + 12);
+      doc.text('Page ' + i + ' of ' + n, W - M, H - M + 12, { align: 'right' });
+    }
+    return doc;
+  }
+
+  /* ======================================================================
      Clear, export, import
      ====================================================================== */
   function clearSheet(ws) {
@@ -575,10 +783,10 @@
       sec.blocks.forEach(b => {
         if (b.type === 'fields') {
           const f = node('fields', { block: b.id });
-          b.fields.forEach(fd => { const k = key(sec, b, fd.id); f.append(node('field', { id: fd.id, label: fd.label }, k in data.v ? data.v[k] : (fd.default || ''))); });
+          b.fields.forEach(fd => { const k = key(sec, b, fd.id); f.append(node('field', { id: fd.id, label: fd.label }, data.v[k] || '')); });
           s.append(f);
         } else if (b.type === 'text') {
-          const k = key(sec, b); s.append(node('text', { block: b.id }, k in data.v ? data.v[k] : (b.default || '')));
+          const k = key(sec, b); s.append(node('text', { block: b.id }, data.v[k] || ''));
         } else if (b.type === 'checks') {
           const c = node('checks', { block: b.id, label: b.label });
           b.options.forEach(o => c.append(node('option', { id: o.id, label: o.label, checked: data.v[key(sec, b, o.id)] === 'true' ? 'true' : 'false' })));
@@ -607,7 +815,7 @@
               let v;
               if (c.readonly) v = (r.cells && r.cells[c.id]) || '';
               else if (c.type === 'computed') v = r.count ? String(registerValues(ws, r.count.of, r.count.col).filter(x => x === r.count.value).length) : '';
-              else { const k = key(sec, b, r.ref, c.id); v = k in data.v ? data.v[k] : ((r.defaults && r.defaults[c.id]) || ''); }
+              else { const k = key(sec, b, r.ref, c.id); v = data.v[k] || ''; }
               item.append(node('cell', { col: c.id, label: c.label, readonly: c.readonly || c.type === 'computed' ? 'true' : null }, v));
             });
             reg.append(item);

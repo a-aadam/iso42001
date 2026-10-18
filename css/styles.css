@@ -181,7 +181,7 @@ button, input, select, textarea { font: inherit; color: inherit; }
 .theme-switch button[aria-pressed="true"] { background: var(--lav-tint); color: var(--lav-ink); }
 
 .main { min-width: 0; outline: none; }
-#view { padding: 40px var(--gutter) 96px; max-width: 1480px; }
+#view { padding: 40px var(--gutter) 96px; max-width: 1480px; margin: 0 auto; }
 
 /* ---------- the sheet grid: margin column + body ---------- */
 .sheet-head, .sec { display: grid; grid-template-columns: var(--margin) minmax(0, 1fr); column-gap: 24px; }
@@ -286,6 +286,9 @@ button, input, select, textarea { font: inherit; color: inherit; }
   outline: none; border-color: var(--lav); box-shadow: 0 0 0 3px var(--lav-tint-2);
 }
 ::placeholder { color: var(--ink-3); opacity: 1; }
+/* template text: greyed, read-only by nature, gone as soon as the field is clicked */
+.has-template::placeholder { color: var(--ink-3); font-style: italic; }
+input:focus::placeholder, textarea:focus::placeholder { color: transparent; }
 input[type="date"] { min-width: 0; }
 input[type="date"]::-webkit-calendar-picker-indicator { opacity: .6; cursor: pointer; }
 :root[data-theme="dark"] input[type="date"]::-webkit-calendar-picker-indicator { filter: invert(.9); }
@@ -293,7 +296,10 @@ input[type="date"]::-webkit-calendar-picker-indicator { opacity: .6; cursor: poi
 select { cursor: pointer; }
 select option { background: var(--paper); color: var(--ink); }
 
-.placeholder-warn { margin-top: 8px; font-size: 13px; color: var(--warn); }
+.text-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 4px 16px; max-width: 860px; margin-top: 6px; }
+.placeholder-warn { font-size: 13px; color: var(--warn); }
+.use-template { margin-left: auto; height: 30px; font-size: 13px; color: var(--lav-ink); }
+.use-template[hidden] { display: none; }
 
 .checks { border: 0; padding: 0; margin: 0 0 16px; display: grid; gap: 4px; max-width: 860px; }
 .checks legend { font-size: 13px; font-weight: 600; margin-bottom: 8px; padding: 0; }
@@ -360,8 +366,9 @@ select option { background: var(--paper); color: var(--ink); }
 
 .grid td.ro { padding: 10px 12px; color: var(--ink-2); line-height: 1.5; background: var(--paper); min-width: 300px; max-width: 520px; }
 .grid td.computed { padding: 10px; font-weight: 600; background: var(--paper); }
-.grid .row-tools { width: 40px; min-width: 40px; padding: 6px; text-align: center; background: var(--paper); }
-.grid .row-tools .icon-btn { opacity: .55; }
+.grid .row-tools { width: 92px; min-width: 92px; padding: 6px; text-align: center; background: var(--paper); }
+.grid thead th.row-tools { padding: 10px 8px; text-align: center; white-space: nowrap; background: var(--paper-sunk); }
+.grid .row-tools .icon-btn { opacity: .7; }
 .grid tr:hover .row-tools .icon-btn, .grid .row-tools .icon-btn:focus-visible { opacity: 1; }
 .grid .row-tools .icon-btn:hover { color: var(--bad); background: var(--bad-tint); }
 
