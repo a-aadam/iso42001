@@ -1,0 +1,11 @@
+# Source templates (kept local)
+*.docx
+
+# Local tooling
+.claude/
+.impeccable/
+PRODUCT.md
+
+# OS
+Thumbs.db
+.DS_Store

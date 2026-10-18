@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ISO 42001 Initiation Workbook</title>
+  <meta name="description" content="A browser-only workbook for documenting the first steps of an ISO/IEC 42001:2023 AI management system project.">
+  <meta name="color-scheme" content="light dark">
+  <script>
+    /* Apply the saved theme before first paint so the page never flashes */
+    (function () {
+      try {
+        var q = (location.search.match(/[?&]theme=(light|dark)/) || [])[1];
+        var t = q || localStorage.getItem('iso42001:theme');
+        if (t === 'light' || t === 'dark') document.documentElement.setAttribute('data-theme', t);
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Public+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%23313638'/%3E%3Cpath d='M9 9h14M9 16h14M9 23h9' stroke='%23C4B8F5' stroke-width='2.5' stroke-linecap='round'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+  <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+    <defs>
+      <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M4.6 4.6l1.4 1.4M18 18l1.4 1.4M2.5 12h2M19.5 12h2M4.6 19.4L6 18M18 6l1.4-1.4"/></symbol>
+      <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4v11M7.5 10.5L12 15l4.5-4.5M5 19.5h14"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 15.5V4.5M7.5 9L12 4.5 16.5 9M5 19.5h14"/></symbol>
+      <symbol id="i-print" viewBox="0 0 24 24"><path d="M7 8.5V4h10v4.5M7 16.5H5a1.5 1.5 0 0 1-1.5-1.5v-5A1.5 1.5 0 0 1 5 8.5h14a1.5 1.5 0 0 1 1.5 1.5v5a1.5 1.5 0 0 1-1.5 1.5h-2"/><path d="M7 13.5h10V20H7z"/></symbol>
+      <symbol id="i-erase" viewBox="0 0 24 24"><path d="M4.5 7h15M10 11v6M14 11v6M6.5 7l1 12.5h9l1-12.5M9.5 7V4.5h5V7"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5.5v13M5.5 12h13"/></symbol>
+      <symbol id="i-minus" viewBox="0 0 24 24"><path d="M6 12h12"/></symbol>
+      <symbol id="i-book" viewBox="0 0 24 24"><path d="M4.5 5.5c2.5-1 5-1 7.5.5v13c-2.5-1.5-5-1.5-7.5-.5zM19.5 5.5c-2.5-1-5-1-7.5.5v13c2.5-1.5 5-1.5 7.5-.5z"/></symbol>
+      <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+      <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+      <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+    </defs>
+  </svg>
+
+  <a class="skip" href="#main">Skip to content</a>
+
+  <header class="topbar">
+    <button class="icon-btn" id="menu-open" aria-label="Open worksheet list" aria-controls="sidebar" aria-expanded="false">
+      <svg class="i"><use href="#i-menu"/></svg>
+    </button>
+    <span class="topbar-title">ISO/IEC 42001 Workbook</span>
+  </header>
+
+  <div class="shell">
+    <aside class="sidebar" id="sidebar" aria-label="Worksheets">
+      <div class="brand">
+        <span class="brand-std">ISO/IEC 42001:2023</span>
+        <span class="brand-name">Project Initiation Workbook</span>
+        <button class="icon-btn menu-close" id="menu-close" aria-label="Close worksheet list">
+          <svg class="i"><use href="#i-close"/></svg>
+        </button>
+      </div>
+      <nav class="nav" id="nav"></nav>
+      <div class="sidebar-foot" aria-hidden="true"></div>
+    </aside>
+    <div class="scrim" id="scrim" hidden></div>
+    <div class="theme-dock">
+      <div class="theme-switch" role="group" aria-label="Colour theme" id="theme-switch">
+        <button type="button" data-theme-set="light" aria-pressed="false"><svg class="i"><use href="#i-sun"/></svg><span>Light</span></button>
+        <button type="button" data-theme-set="dark" aria-pressed="false"><svg class="i"><use href="#i-moon"/></svg><span>Dark</span></button>
+      </div>
+    </div>
+
+    <main class="main" id="main" tabindex="-1">
+      <div id="view"></div>
+    </main>
+  </div>
+
+  <input type="file" id="import-file" accept=".xml,application/xml,text/xml" hidden>
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <!-- How to use: static content, rendered into #view by app.js -->
+  <template id="tpl-howto">
+    <article class="sheet howto">
+      <header class="sheet-head">
+        <div class="margin"><span class="ref">Guide</span></div>
+        <div class="sheet-title">
+          <h1>How to use this workbook</h1>
+          <p class="lede">Ten worksheets that take an organisation from “we use AI” to a documented, auditable start on an ISO/IEC 42001:2023 AI management system. Everything you type stays in this browser.</p>
+        </div>
+      </header>
+
+      <section class="sec">
+        <div class="margin"><span class="ref">Start</span></div>
+        <div class="sec-body">
+          <h2>Using the workbook</h2>
+          <ol class="steps-plain">
+            <li><b>Pick a worksheet</b> from the list on the left. They run in the order a project usually needs them, but you can fill them in any order. The percentage next to each one shows how much you’ve completed.</li>
+            <li><b>Fill in the form.</b> Type straight into fields and table cells. Use <b>Add row</b> under a table when you need more lines. Scores, risk levels and audit counts are calculated for you.</li>
+            <li><b>Check the examples.</b> Each section has an <b>Example</b> line showing the kind of entry an auditor expects. Use <b>Show all examples</b> in the toolbar to open them all at once.</li>
+            <li><b>Your work saves itself</b> in this browser as you type. Clearing your browser data deletes it, so export regularly.</li>
+            <li><b>Export XML</b> saves the worksheet as a file you can back up, share or version-control. <b>Import XML</b> loads one back, on this or another computer.</li>
+            <li><b>Print</b> gives a clean, paper-ready copy of the worksheet. Choose “Save as PDF” in the print dialog to add it to your evidence pack.</li>
+          </ol>
+          <p class="aside-note">Nothing is sent to a server. The workbook is a static page, and your entries never leave your device unless you export them.</p>
+        </div>
+      </section>
+
+      <section class="sec">
+        <div class="margin"><span class="ref">About</span></div>
+        <div class="sec-body prose">
+          <h2>What is ISO/IEC 42001?</h2>
+          <p>ISO/IEC 42001:2023 is the first international standard for an <b>AI management system (AIMS)</b>. It sets out how an organisation that develops, provides or uses AI should govern it: the policies, roles, risk and impact processes, controls and records that show AI is managed responsibly. It follows the same clause structure as ISO 27001 and ISO 9001 (Clauses 4 to 10), adds 38 AI-specific controls in Annex A, and can be independently certified.</p>
+        </div>
+      </section>
+
+      <section class="sec">
+        <div class="margin"><span class="ref">Scope</span></div>
+        <div class="sec-body">
+          <h2>What the standard touches on</h2>
+          <dl class="defs">
+            <div><dt>AI governance and leadership</dt><dd>Transparency around who’s accountable and how risk is monitored in your organisation.</dd></div>
+            <div><dt>Risk and impact assessments</dt><dd>Not only technical risks, but social and ethical ones too.</dd></div>
+            <div><dt>Data management</dt><dd>Clarity on the data being fed to your AI systems, and whether it’s clean and fair.</dd></div>
+            <div><dt>Transparency and explainability</dt><dd>Ideally, even non-technical people should understand your outputs.</dd></div>
+            <div><dt>Human oversight</dt><dd>Humans should still be in the loop where it matters.</dd></div>
+          </dl>
+        </div>
+      </section>
+
+      <section class="sec">
+        <div class="margin"><span class="ref">Sheets</span></div>
+        <div class="sec-body">
+          <h2>What the worksheets help you achieve</h2>
+          <p class="sec-intro">Together they produce the core documented information a certification body asks for at Stage 1. Each one feeds the next: context shapes scope and risks, risks drive the controls in the SoA, and the gap analysis, audit and readiness checklists prove the system works.</p>
+          <div class="sheet-index" id="sheet-index"></div>
+        </div>
+      </section>
+
+      <section class="sec">
+        <div class="margin"><span class="ref">Path</span></div>
+        <div class="sec-body">
+          <h2>The full implementation, step by step</h2>
+          <p class="sec-intro">These worksheets cover the initiation. Here is the whole road to certification.</p>
+          <ol class="roadmap">
+            <li>
+              <span class="step-no">Step 1</span>
+              <div>
+                <h3>Gap analysis</h3>
+                <p>Measure where you stand against every clause and Annex A control. A typical gap analysis reviews AI risk management, impact assessments, data governance, human oversight, transparency and incident response.</p>
+              </div>
+            </li>
+            <li>
+              <span class="step-no">Step 2</span>
+              <div>
+                <h3>AIMS scope definition</h3>
+                <p>Formally define which parts of your business the certification applies to.</p>
+              </div>
+            </li>
+            <li>
+              <span class="step-no">Step 3</span>
+              <div>
+                <h3>AIMS design</h3>
+                <p>Build processes for:</p>
+                <ul>
+                  <li>Governance, roles and responsibilities</li>
+                  <li>AI risk management and impact assessment</li>
+                  <li>Data handling policies (quality, sourcing, retention)</li>
+                  <li>Transparency and communication protocols</li>
+                  <li>Human oversight and escalation paths</li>
+                  <li>Monitoring and continual improvement</li>
+                </ul>
+              </div>
+            </li>
+            <li>
+              <span class="step-no">Step 4</span>
+              <div>
+                <h3>Team role-based training</h3>
+                <ul>
+                  <li>Create a training calendar</li>
+                  <li>Develop role-based training modules</li>
+                  <li>Build a practical compliance playbook</li>
+                </ul>
+              </div>
+            </li>
+            <li>
+              <span class="step-no">Step 5</span>
+              <div>
+                <h3>Implementation of operation</h3>
+                <dl class="defs compact">
+                  <div><dt>Transition to live operations</dt><dd>Begin running all relevant AI systems under your AIMS policies, so that development, deployment and monitoring follow your documented procedures.</dd></div>
+                  <div><dt>Track and log activity</dt><dd>Keep detailed records of decisions, model updates, oversight points and system changes to build a transparent, auditable trail.</dd></div>
+                  <div><dt>Monitor outcomes in real time</dt><dd>Observe model performance and outputs, flag anomalies or ethical concerns, and document any corrective actions taken.</dd></div>
+                  <div><dt>Document incidents and reviews</dt><dd>For each issue or deviation, capture what happened, how it was addressed and what changed to prevent it happening again.</dd></div>
+                  <div><dt>Gather team feedback and lessons learned</dt><dd>Talk to the people who use the system day to day and identify the pain points or gaps that need adjusting.</dd></div>
+                </dl>
+              </div>
+            </li>
+            <li>
+              <span class="step-no">Step 6</span>
+              <div>
+                <h3>Internal audit and management review</h3>
+                <p>Audit the AIMS against every clause and the selected Annex A controls, then hold a management review of the results, nonconformities and improvement actions.</p>
+              </div>
+            </li>
+            <li>
+              <span class="step-no">Step 7</span>
+              <div>
+                <h3>Certification readiness</h3>
+                <p>The certification audit runs in two stages:</p>
+                <dl class="defs compact">
+                  <div><dt>Stage 1</dt><dd>Prepare for the document review.</dd></div>
+                  <div><dt>Stage 2</dt><dd>Demonstrate the system in action.</dd></div>
+                </dl>
+              </div>
+            </li>
+            <li>
+              <span class="step-no">Step 8</span>
+              <div>
+                <h3>Continuous surveillance</h3>
+                <p>After certification, surveillance audits check every year that the AIMS keeps working and improving, ahead of recertification in year three.</p>
+              </div>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section class="sec">
+        <div class="margin"><span class="ref">Data</span></div>
+        <div class="sec-body">
+          <h2>Your data</h2>
+          <p class="sec-intro">Entries are stored in this browser’s local storage, one record per worksheet. To start over, open a worksheet and use <b>Clear</b>, or erase everything here.</p>
+          <button type="button" class="btn btn-quiet danger" id="clear-all"><svg class="i"><use href="#i-erase"/></svg>Erase all worksheets</button>
+        </div>
+      </section>
+    </article>
+  </template>
+
+  <script src="js/worksheets.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
