@@ -34,35 +34,14 @@ A **How to use** guide and ten worksheets, each reproducing the fields and table
 - **Light and dark themes:** use the toggle at the bottom left. The palette is soft white `#FFFFF9`, dark gray `#313638` and a lavender accent.
 - **Responsive:** usable on a phone, with the worksheet list in a slide-out drawer.
 
-## Running locally
-
-It's plain HTML, CSS and JavaScript, with no build step and no dependencies. Serve the folder with any static server, for example:
-
-```bash
-npx serve .
-```
-
-Opening `index.html` directly also works in most browsers.
-
-## Project structure
-
-```
-index.html         App shell and the How to use guide
-css/styles.css     Design tokens, layout, themes, print styles
-js/worksheets.js   Worksheet definitions (every field, column and fixed row)
-js/app.js          Rendering, autosave, calculations, XML export/import, theme
-```
-
-To change a worksheet, edit its definition in `js/worksheets.js`. Rendering, saving, progress and XML export all derive from it.
-
 ## Hosting
 
 The site is served by GitHub Pages from the `main` branch root (Settings → Pages → Deploy from a branch → `main` / `root`).
 
 ## About
 
-This is a personal project built for learning purposes, made using Claude Code. The texts were written by a human through online research, and some have been enhanced and reworked by Claude. It replicates how an auditor would tackle a project, but it is not fully made for enterprise use. The user bears the responsibility if it is used in an enterprise environment.
+This is a personal project built for learning purposes, made using Claude Code. The texts were written by a human through online research, and some have been enhanced and reworked by Claude. It replicates how an auditor would tackle a project, but it is not fully made for enterprise use. The user bares the responsibility if it is used in an enterprise environment.
 
 ## Credits
 
-Worksheet structure is based on the free ISO 42001 templates from AuditWorkshop.com. ISO/IEC 42001 is a standard published by ISO and IEC. This project isn't affiliated with or endorsed by ISO, IEC or any certification body, and using it doesn't by itself make an organisation conform to the standard.
+Worksheets structures are based on the free ISO 42001 templates and research found online from but not limited to AuditWorkshop, Sprinto or Drata. ISO/IEC 42001 is a standard published by ISO and IEC. This project isn't affiliated with or endorsed by ISO, IEC or any certification body, and using it doesn't by itself make an organization conform to the standard.
